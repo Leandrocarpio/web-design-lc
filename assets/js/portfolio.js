@@ -1,26 +1,32 @@
-// js/portfolio.js - Carrusel simple y funcional
+// =============================================================================
+// PORTFOLIO.JS - Carrusel de proyectos profesional
+// =============================================================================
+// Gestión del carousel con navegación, autoplay y responsive
+// Links y imágenes actualizadas con proyectos reales
+// =============================================================================
+
 export function initPortfolioCarousel() {
     const projects = [
         {
             title: "Mendoza Wine",
             description: "Landing page elegante para bodega premium con diseño moderno y completamente responsive. Enfocada en la experiencia del usuario y conversión.",
-            image: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=1200&h=600&fit=crop",
+            image: "https://images.unsplash.com/photo-1558241665-89718b74c89c?q=80&w=1600&auto=format&fit=crop",
             technologies: ["HTML5", "CSS3", "JavaScript", "Responsive Design", "UX/UI"],
-            link: "https://leandrocarpio.github.io/Mendoza-Wine/"
+            link: "https://leandrocarpio.github.io/Mendoza-Wine-Web/"
         },
         {
             title: "El Caverna Gym",
             description: "Sitio web profesional para gimnasio con enfoque en conversión y experiencia de usuario. Diseño moderno y optimizado para móviles.",
             image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&h=600&fit=crop",
             technologies: ["HTML5", "CSS3", "Bootstrap", "JavaScript", "Responsive"],
-            link: "https://leandrocarpio.github.io/El-caverna-gym/"
+            link: "https://leandrocarpio.github.io/el-caverna-gym-landing/"
         },
         {
             title: "Libera tu Luz Interior",
             description: "Página web espiritual con diseño sereno y enfocado en la experiencia del usuario. Colores suaves y navegación intuitiva.",
-            image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=600&fit=crop",
+            image: "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?q=80&w=1600&auto=format&fit=crop",
             technologies: ["HTML5", "CSS3", "Design", "Accesibilidad", "Responsive"],
-            link: "https://leandrocarpio.github.io/Libera-tu-luz-interior/"
+            link: "https://leandrocarpio.github.io/Libera-tu-luz-interior-web/"
         }
     ];
 
@@ -49,14 +55,16 @@ export function initPortfolioCarousel() {
             slide.innerHTML = `
                 <div class="project-preview" style="background-image: url('${project.image}')">
                     <div class="project-overlay">
-                        <h3>${project.title}</h3>
-                        <p>${project.description}</p>
-                        <div class="project-tech">
-                            ${project.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+                        <div class="project-content">
+                            <h3>${project.title}</h3>
+                            <p>${project.description}</p>
+                            <div class="project-tech">
+                                ${project.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+                            </div>
+                            <a href="${project.link}" target="_blank" rel="noopener noreferrer" class="project-link">
+                                <i class="bi bi-eye"></i> Ver Proyecto Live
+                            </a>
                         </div>
-                        <a href="${project.link}" target="_blank" rel="noopener noreferrer" class="project-link">
-                            <i class="bi bi-eye"></i> Ver Proyecto Live
-                        </a>
                     </div>
                 </div>
             `;
@@ -70,6 +78,7 @@ export function initPortfolioCarousel() {
         projects.forEach((_, index) => {
             const indicator = document.createElement('button');
             indicator.className = 'carousel-indicator';
+            indicator.setAttribute('aria-label', `Ir al proyecto ${index + 1}`);
             if (index === 0) indicator.classList.add('active');
             indicator.addEventListener('click', () => goToSlide(index));
             indicatorsContainer.appendChild(indicator);
@@ -86,9 +95,9 @@ export function initPortfolioCarousel() {
             indicator.classList.toggle('active', index === currentSlide);
         });
         
-        // Actualizar botones
-        if (prevBtn) prevBtn.disabled = currentSlide === 0;
-        if (nextBtn) nextBtn.disabled = currentSlide === projects.length - 1;
+        // Actualizar botones (opcional: deshabilitar en extremos)
+        // if (prevBtn) prevBtn.disabled = currentSlide === 0;
+        // if (nextBtn) nextBtn.disabled = currentSlide === projects.length - 1;
     }
 
     function goToSlide(index) {
@@ -131,8 +140,19 @@ export function initPortfolioCarousel() {
     }
 
     function setupEventListeners() {
-        if (prevBtn) prevBtn.addEventListener('click', prevSlide);
-        if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                prevSlide();
+                restartAutoRotate();
+            });
+        }
+        
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                nextSlide();
+                restartAutoRotate();
+            });
+        }
 
         // Pausar auto-rotate al interactuar
         if (slidesContainer) {
@@ -142,8 +162,14 @@ export function initPortfolioCarousel() {
 
         // Navegación por teclado
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') prevSlide();
-            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') {
+                prevSlide();
+                restartAutoRotate();
+            }
+            if (e.key === 'ArrowRight') {
+                nextSlide();
+                restartAutoRotate();
+            }
         });
 
         // Swipe para móviles
@@ -157,11 +183,13 @@ export function initPortfolioCarousel() {
         if (slidesContainer) {
             slidesContainer.addEventListener('touchstart', (e) => {
                 startX = e.touches[0].clientX;
+                stopAutoRotate();
             });
 
             slidesContainer.addEventListener('touchend', (e) => {
                 endX = e.changedTouches[0].clientX;
                 handleSwipe();
+                restartAutoRotate();
             });
         }
 
